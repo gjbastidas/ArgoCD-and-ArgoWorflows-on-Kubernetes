@@ -90,7 +90,7 @@ RoleBinding: argowf-argo-workflows-workflow
 
 ## Run Argo Workflow
 ```
-argo -n argo submit base-workflow.yaml --serviceaccount argo-workflow --watch
+argo -n argo submit wf/base-workflow.yaml --serviceaccount argo-workflow --watch
 ```
 
 ## Argo Workflow Useful commands
