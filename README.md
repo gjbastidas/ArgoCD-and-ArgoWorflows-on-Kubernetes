@@ -48,6 +48,11 @@ helm repo add argo https://argoproj.github.io/argo-helm
 helm dependency build helm/argo-wf
 ```
 
+## Apply Argo Workflow Helm charts
+```shell
+helm install argowf helm/argo-wf --namespace argo --create-namespace
+```
+
 ## Enter UI locally:
 
 1. Port-forward argo-workflows-server
@@ -55,4 +60,4 @@ helm dependency build helm/argo-wf
 kubectl -n argo port-forward deployment/argowf-argo-workflows-server 2746:2746
 ```
 
-2. Navigate to http://localhost:2746
+2. Navigate to https://localhost:2746
