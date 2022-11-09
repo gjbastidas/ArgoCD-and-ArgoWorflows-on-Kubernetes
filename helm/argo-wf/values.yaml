@@ -1,0 +1,11 @@
+argo-workflows:
+  crds:
+    keep: false
+  server:
+    extraArgs:
+    - --auth-mode=server
+  # workflow:
+  #   serviceAccount:
+  #     create: true
+  #   rbac:
+  #     create: true

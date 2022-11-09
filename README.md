@@ -37,3 +37,22 @@ Password: `kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=
 
 TODO: I need someone that can provide helm chart to install workflow.
 deliverable: README.md. - so i can deploy workflow on my existing cluster.
+
+## If it's not installed already, Install Argo helm repo
+```shell
+helm repo add argo https://argoproj.github.io/argo-helm
+```
+
+## Build dependencies
+```shell
+helm dependency build helm/argo-wf
+```
+
+## Enter UI locally:
+
+1. Port-forward argo-workflows-server
+```shell
+kubectl -n argo port-forward deployment/argowf-argo-workflows-server 2746:2746
+```
+
+2. Navigate to http://localhost:2746
