@@ -61,3 +61,42 @@ kubectl -n argo port-forward deployment/argowf-argo-workflows-server 2746:2746
 ```
 
 2. Navigate to https://localhost:2746
+
+## Install Argo CLI to interact with Workflows
+https://github.com/argoproj/argo-workflows/releases/tag/v3.4.3
+
+For Linux:
+```shell
+# Download the binary
+curl -sLO https://github.com/argoproj/argo-workflows/releases/download/v3.4.3/argo-linux-amd64.gz
+
+# Unzip
+gunzip argo-linux-amd64.gz
+
+# Make binary executable
+chmod +x argo-linux-amd64
+
+# Move binary to path
+mv ./argo-linux-amd64 /usr/local/bin/argo
+
+# Test installation
+argo version
+```
+
+## Service Account to use Argo Workflows
+SA: argo-workflow
+Role: argowf-argo-workflows-workflow
+RoleBinding: argowf-argo-workflows-workflow
+
+## Run Argo Workflow
+```
+argo -n argo submit base-workflow.yaml --serviceaccount argo-workflow --watch
+```
+
+## Argo Workflow Useful commands
+```shell
+# List workflows
+argo -n argo list
+
+
+```
