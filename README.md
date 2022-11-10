@@ -98,5 +98,14 @@ argo -n argo submit wf/base-workflow.yaml --serviceaccount argo-workflow --watch
 # List workflows
 argo -n argo list
 
+# delete workflow
+argo -nargo delete process-bak-files72vt9
 
+```
+
+DELETE ME
+```
+kubectl -nargo create secret generic minio \
+    --from-literal=AWS_ACCESS_KEY_ID=<replace with access key> \
+    --from-literal=AWS_SECRET_ACCESS_KEY=<replace with secret key>
 ```

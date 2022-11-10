@@ -1,2 +1,110 @@
-# workflow needs to list and download all *.bak on 1 machine.
-# sleep then upload to s3 in another bucket
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: process-bak-files
+  annotations:
+    workflows.argoproj.io/description: |
+      workflow needs to list and download all *.bak files
+      from s3 bucket on 1 machine. then, sleep and finally 
+      upload files another s3 bucket.
+spec:
+  entrypoint: main
+  volumes:
+  - name: secrets_vol
+    secret:
+      secretName: minio
+    items:
+    - key: AWS_ACCESS_KEY_ID
+      path: access_key
+    - key: AWS_SECRET_ACCESS_KEY
+      path: secret_key
+  templates:
+  - name: main
+    steps:
+      - - name: load_secrets
+          template: load_secrets
+      - - name: download-bak-files
+          template: download-bak-files
+          arguments:
+            artifacts:
+            - name: env_file
+              from: "{{steps.load_secrets.outputs.artifacts.env_file}}"
+  - name: load_secrets
+    container:
+      image: alpine:latest
+      command: [sh, -c]
+      args: [sleep 2; echo "AWS_ACCESS_KEY_ID=$(cat /secret/access_key)" > /tmp/.env && echo "AWS_SECRET_ACCESS_KEY=$(cat /secret/secret_key)" >> /tmp/.env]
+      volumeMounts:
+      - name: secrets_vol
+        mountPath: /secret
+    outputs:
+      artifacts:
+      - name: env_file
+        path: /tmp/.env
+  - name: download-bak-files
+    inputs:
+      artifacts:
+      - name: env_file
+        path: /tmp/.env
+    script:
+      image: python:alpine3.6
+      command: [python]
+      source: |
+        import os
+        from dotenv import load_dotenv
+        from pathlib import Path
+        dotenv_path = Path("/tmp/.env")
+        load_dotenv(dotenv_path=dotenv_path)
+        print(f'AWS_ACCESS_KEY_ID: {os.getenv('AWS_ACCESS_KEY_ID')}\n')
+        print(f'AWS_SECRET_ACCESS_KEY: {os.getenv('AWS_SECRET_ACCESS_KEY')}\n')
+        # import os
+        # import boto3
+        # bucket = 'input'
+        # key = '*.bak'
+        # s3_resource = boto3.resource('s3')
+        # my_bucket = s3_resource.Bucket(bucket)
+        # objects = my_bucket.objects.filter(Prefix=key)
+        # for obj in objects:
+        #     path, filename = os.path.split(obj.key)
+        #     my_bucket.download_file(obj.key, filename)
+  # - name: download-bak-files
+  #   inputs:
+  #     artifacts:
+  #     - name: bak_files
+  #       path: /bak_files
+  #       s3:
+  #         endpoint: minio.minio-dev.svc.cluster.local:9000
+  #         insecure: true
+  #         bucket: input
+  #         key: file1.bak
+  #         # region:
+  #         accessKeySecret:
+  #           name: minio
+  #           key: AWS_ACCESS_KEY_ID
+  #         secretKeySecret:
+  #           name: minio
+  #           key: AWS_SECRET_ACCESS_KEY
+  #   container:
+  #     image: alpine:latest
+  #     command: ["sh", "-c"]
+  #     args: ["ls -l /back_files"]
+  # - name: upload-bak-files
+  #   container:
+  #     image: alpine:latest
+  #     command: ["sh", "-c"]
+  #     args: ["sleep", "3600"]
+  #   outputs:
+  #     artifacts:
+  #     - name: bak_files
+  #       path: /bak_files
+  #       s3:
+  #         endpoint: minio.minio-dev.svc.cluster.local:9090
+  #         insecure: true
+  #         bucket: input
+  #         key: *.bak
+  #         accessKeySecret:
+  #           name: minio
+  #           key: AccessKey
+  #         secretKeySecret:
+  #           name: minio
+  #           key: SecretKey
