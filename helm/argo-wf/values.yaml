@@ -1,13 +1,14 @@
-argo-workflows:
-  crds:
-    keep: false
-  server:
-    secure: true
-    extraArgs:
-    - --auth-mode=server
-    - --insecure-skip-verify
-  workflow:
-    serviceAccount:
-      create: true
-    rbac:
-      create: true
+crds:
+  keep: false
+server:
+  secure: true
+  extraArgs:
+  - --auth-mode=server
+  # - --auth-mode=sso
+  # - --auth-mode=client
+  - --insecure-skip-verify
+workflow:
+  serviceAccount:
+    create: true
+  rbac:
+    create: true

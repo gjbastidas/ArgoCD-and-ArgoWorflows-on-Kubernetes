@@ -1,2 +1,80 @@
-# workflow needs to list and download all *.bak on 1 machine.
-# sleep then upload to s3 in another bucket
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: process-bak-files
+  annotations:
+    workflows.argoproj.io/description: |
+      workflow needs to download all *.bak files
+      from s3 bucket on 1 machine. then, sleep and finally 
+      upload files to another s3 bucket
+spec:
+  entrypoint: main
+  templates:
+  - name: main
+    steps:
+      - - name: one
+          template: download-bak-files
+      - - name: two
+          template: sleep
+      - - name: three
+          template: upload-bak-files
+          arguments:
+            artifacts:
+            - name: bak_files
+              from: "{{steps.one.outputs.artifacts.bak_files}}"
+  
+  - name: download-bak-files
+    container:
+      image: amazon/aws-cli:latest
+      args: [s3, cp, s3://inputzzz, /tmp]
+      env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: accessKey
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: secretKey
+      - name: AWS_DEFAULT_REGION
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: region
+    outputs:
+      artifacts:
+        - name: bak_files
+          path: /tmp/
+
+  - name: sleep
+    container:
+      image: alpine:latest
+      command: [sh, -c]
+      args: [sleep 60 && echo "Done sleeping!! Moving on"]
+  
+  - name: upload-bak-files
+    inputs:
+      artifacts:
+        - name: bak_files
+          path: /tmp/bak_files
+    container:
+      image: amazon/aws-cli:latest
+      args: [s3, cp, /tmp/bak_files, s3://outputzzz]
+      env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: accessKey
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: secretKey
+      - name: AWS_DEFAULT_REGION
+        valueFrom:
+          secretKeyRef:
+            name: aws-s3-creds
+            key: region
