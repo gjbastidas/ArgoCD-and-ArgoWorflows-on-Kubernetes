@@ -4,8 +4,6 @@ server:
   secure: true
   extraArgs:
   - --auth-mode=server
-  # - --auth-mode=sso
-  # - --auth-mode=client
   - --insecure-skip-verify
 workflow:
   serviceAccount:
