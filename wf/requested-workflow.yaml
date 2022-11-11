@@ -13,6 +13,7 @@ spec:
     persistentVolumeClaim:
       claimName: task-pv-claim
   entrypoint: main
+  onExit: cleanFS
   templates:
   - name: main
     steps:
@@ -76,6 +77,15 @@ spec:
           secretKeyRef:
             name: aws-s3-creds
             key: region
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/vol
+  
+  - name: cleanFS
+    container:
+      image: alpine:latest
+      command: [sh, -c]
+      args: [rm -rf /mnt/vol/* && echo "Deleted files from volume"]
       volumeMounts:
       - name: workdir
         mountPath: /mnt/vol

@@ -1,4 +1,4 @@
-# Install ArgoCD locally from Helm chart
+# Install ArgoCD from Helm chart
 
 ## Install Argo helm repo
 ```shell
@@ -96,7 +96,7 @@ kubectl -n argo create secret generic aws-s3-creds \
 ```
 
 ## Create volume
-This is to be passed around containers as workspace
+This is to be passed around containers as workspace.
 ```
 kubectl create -f wf/local-volume.yaml
 ```
@@ -119,7 +119,9 @@ argo -n argo list
 
 # See logs
 argo -nargo logs process-bak-files6hsm7
+argo -nargo logs @latest
 
 # Delete workflow
 argo -n argo delete process-bak-files6hsm7
+argo -n argo delete @latest
 ```
