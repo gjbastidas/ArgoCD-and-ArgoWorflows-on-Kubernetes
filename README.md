@@ -39,8 +39,6 @@ helm repo add argo https://argoproj.github.io/argo-helm
 
 ## Apply Argo Workflow Helm charts
 ```shell
-DELETE ME
-helm install argowf helm/argo-wf --namespace argo --create-namespace
 helm install argowf -f helm/argo-wf/values.yaml argo/argo-workflows --namespace argo --create-namespace --version 0.20.6
 ```
 
