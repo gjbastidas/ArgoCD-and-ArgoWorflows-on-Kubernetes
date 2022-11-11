@@ -95,57 +95,11 @@ kubectl -n argo create secret generic aws-s3-creds \
     --from-literal=region=$AWS_DEFAULT_REGION
 ```
 
-## Config Artifact Repository
-The requested workflow make use of artifacts. Therefore, Argo forces to use an artifact repository. This is using S3 as requested.
-
-1. Create S3 bucket for artifactory
-[configuring-aws-s3](https://argoproj.github.io/argo-workflows/configure-artifact-repository/#configuring-aws-s3)
-
-Expected configuration for this case is documented [here](./helm/argo-wf/patch.yaml)
-
-2. Update workflow controller
-```shell
-kubectl -n argo edit cm argowf-argo-workflows-workflow-controller-configmap
-```
-
-Replace:
-```text 
-config: ""
-```
-
-By:
-```text
-config: |
-artifactRepository:
-    archiveLogs: false
-    s3:
-    endpoint: s3.amazonaws.com
-    bucket: argo-wf-artifactory-zzz
-    region: us-east-1
-    insecure: false
-    accessKeySecret:
-        name: aws-s3-creds
-        key: accessKey
-    secretKeySecret:
-        name: aws-s3-creds
-        key: secretKey
-    keyFormat: "artifacts\
-    /{{workflow.creationTimestamp.Y}}\
-    /{{workflow.creationTimestamp.m}}\
-    /{{workflow.creationTimestamp.d}}\
-    /{{workflow.name}}\
-    /{{pod.name}}"
-``` 
-
-3. Restart the workflow server
-```
-kubectl -n argo rollout restart deploy/argowf-argo-workflows-server
-```
-
 ## Run Argo Workflow
 [Workflow details](./wf/requested-workflow.yaml)
 
 For this case:
+- Local volume to pass around containers
 - S3 input bucket: s3://inputzzz
 - S3 output bucket: s3://outputzzz
 ```shell

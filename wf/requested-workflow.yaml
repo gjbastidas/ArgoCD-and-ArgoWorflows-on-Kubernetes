@@ -8,6 +8,9 @@ metadata:
       from s3 bucket on 1 machine. then, sleep and finally 
       upload files to another s3 bucket
 spec:
+  volumes:
+  - name: workdir
+    emptyDir: {}
   entrypoint: main
   templates:
   - name: main
@@ -18,15 +21,11 @@ spec:
           template: sleep
       - - name: three
           template: upload-bak-files
-          arguments:
-            artifacts:
-            - name: bak_files
-              from: "{{steps.one.outputs.artifacts.bak_files}}"
   
   - name: download-bak-files
     container:
       image: amazon/aws-cli:latest
-      args: [s3, cp, s3://inputzzz, /tmp]
+      args: [s3, sync, s3://inputzzz, /mnt/vol/]
       env:
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
@@ -43,25 +42,23 @@ spec:
           secretKeyRef:
             name: aws-s3-creds
             key: region
-    outputs:
-      artifacts:
-        - name: bak_files
-          path: /tmp/
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/vol
 
   - name: sleep
     container:
       image: alpine:latest
       command: [sh, -c]
-      args: [sleep 60 && echo "Done sleeping!! Moving on"]
+      args: [ls -l /mnt/vol && sleep 60 && echo "Done sleeping!! Moving on"]
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/vol
   
   - name: upload-bak-files
-    inputs:
-      artifacts:
-        - name: bak_files
-          path: /tmp/bak_files
     container:
       image: amazon/aws-cli:latest
-      args: [s3, cp, /tmp/bak_files, s3://outputzzz]
+      args: [s3, sync, /mnt/vol/, s3://outputzzz]
       env:
       - name: AWS_ACCESS_KEY_ID
         valueFrom:
@@ -78,3 +75,6 @@ spec:
           secretKeyRef:
             name: aws-s3-creds
             key: region
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/vol
