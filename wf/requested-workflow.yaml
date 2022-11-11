@@ -10,7 +10,8 @@ metadata:
 spec:
   volumes:
   - name: workdir
-    emptyDir: {}
+    persistentVolumeClaim:
+      claimName: task-pv-claim
   entrypoint: main
   templates:
   - name: main

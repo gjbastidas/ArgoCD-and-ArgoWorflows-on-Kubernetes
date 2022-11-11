@@ -95,6 +95,12 @@ kubectl -n argo create secret generic aws-s3-creds \
     --from-literal=region=$AWS_DEFAULT_REGION
 ```
 
+## Create volume
+This is to be passed around containers as workspace
+```
+kubectl create -f wf/local-volume.yaml
+```
+
 ## Run Argo Workflow
 [Workflow details](./wf/requested-workflow.yaml)
 
